@@ -190,7 +190,7 @@ function SphereGrid({ spheres, color, qtys, onChange }) {
 }
 
 // ── ProductOrderSheet ─────────────────────────────────────────────────────────
-function ProductOrderSheet({ product, onAddToCart, onBack }) {
+function ProductOrderSheet({ product, onAddToCart, onBack, onViewCart, cartCount }) {
   const { spheres, extraDims, color, name, type } = product;
   const initDims = {};
   (extraDims || []).forEach((d) => { initDims[d.key] = d.opts[0]; });
@@ -328,7 +328,17 @@ function ProductOrderSheet({ product, onAddToCart, onBack }) {
         style={{ ...T.primary, marginTop: 16, opacity: canAdd ? 1 : 0.35 }}>
         Add {canAdd ? [bankQty > 0 ? `bank` : null, selectedSpheres.length > 0 ? `${selectedSpheres.length} power${selectedSpheres.length !== 1 ? "s" : ""}` : null].filter(Boolean).join(" + ") : "to order"} →
       </button>
-      <button onClick={onBack} style={{ ...T.secondary, marginTop: 8 }}>← Back to products</button>
+
+      <div style={{ height: 1, background: "#DDE3EF", margin: "12px 0" }} />
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={onBack} style={{ flex: 1, padding: "11px 8px", background: "transparent", color: "#003087", border: "1.5px solid #DDE3EF", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+          ← Products
+        </button>
+        <button onClick={onViewCart} style={{ flex: 2, padding: "11px 8px", background: "transparent", color: "#003087", border: "1.5px solid #003087", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+          View cart ({cartCount} line{cartCount !== 1 ? "s" : ""}) →
+        </button>
+      </div>
     </div>
   );
 }
@@ -567,6 +577,8 @@ Sent from Menicon Trial Lens App`;
             product={product}
             onAddToCart={(lines) => { setCart((c) => [...c, ...lines]); }}
             onBack={() => setStep("product")}
+            onViewCart={() => setStep("summary")}
+            cartCount={cart.length}
           />
         )}
 
