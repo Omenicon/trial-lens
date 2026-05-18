@@ -394,9 +394,19 @@ function App() {
   const [filterType, setFilterType] = React.useState("");
   const [filterBrand, setFilterBrand] = React.useState("");
 
-  // Map filter codes to type keywords
   const scheduleMap = { DD: "Daily", FRP: "Monthly" };
   const typeMap = { SPH: "Sphere", TOR: "Toric", MF: "MF", MFT: "MFT" };
+
+  const handleBrandFilter = (f) => {
+    setFilterBrand(filterBrand === f ? "" : f);
+    setFilterSchedule("");
+    setFilterType("");
+  };
+
+  const handleScheduleFilter = (f) => {
+    setFilterSchedule(filterSchedule === f ? "" : f);
+    setFilterType("");
+  };
 
   const adjustQty = (id, qty) => setCart((c) => c.map((i) => i.id === id ? { ...i, qty } : i));
   const removeItem = (id) => setCart((c) => c.filter((i) => i.id !== id));
@@ -407,9 +417,10 @@ function App() {
 
     const subject = `Trial Lens Order — ${store} (${storeId}) — ${rep} — ${orderDate}`;
 
-    const lines = cart.map((item, i) =>
-      `${i + 1}. ${item.product} (${item.type})\n   ${item.params}\n   Quantity: ${item.qty}`
-    ).join("\n\n");
+    const lines = cart.map((item) => {
+      const parts = [item.product, item.type, item.params, `Qty: ${item.qty}`];
+      return parts.join(" | ");
+    }).join("\n");
 
     const body =
 `Trial Lens Order
@@ -507,35 +518,41 @@ Sent from Menicon Trial Lens App`;
             {/* Search */}
             <input style={{ ...T.input, marginBottom: 12 }} placeholder="🔍 Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
 
-            {/* Brand filters - Row 1 */}
+            {/* Brand filters - Row 1 — always visible */}
             <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
               {["EasyVision", "Eyexpert", "Miru"].map((f) => (
-                <button key={f} onClick={() => setFilterBrand(filterBrand === f ? "" : f)}
+                <button key={f} onClick={() => handleBrandFilter(f)}
                   style={{ padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${filterBrand === f ? "#003087" : "#DDE3EF"}`, background: filterBrand === f ? "#003087" : "#fff", color: filterBrand === f ? "#fff" : "#555" }}>
                   {f}
                 </button>
               ))}
             </div>
 
-            {/* Schedule filters - Row 2 */}
-            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-              {["DD", "FRP"].map((f) => (
-                <button key={f} onClick={() => setFilterSchedule(filterSchedule === f ? "" : f)}
-                  style={{ padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${filterSchedule === f ? "#003087" : "#DDE3EF"}`, background: filterSchedule === f ? "#003087" : "#fff", color: filterSchedule === f ? "#fff" : "#555" }}>
-                  {f}
-                </button>
-              ))}
-            </div>
+            {/* Schedule filters - Row 2 — only after brand selected */}
+            {filterBrand && (
+              <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                {["DD", "FRP"].map((f) => (
+                  <button key={f} onClick={() => handleScheduleFilter(f)}
+                    style={{ padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${filterSchedule === f ? "#003087" : "#DDE3EF"}`, background: filterSchedule === f ? "#003087" : "#fff", color: filterSchedule === f ? "#fff" : "#555" }}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+            )}
 
-            {/* Type filters - Row 3 */}
-            <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
-              {["SPH", "TOR", "MF", "MFT"].map((f) => (
-                <button key={f} onClick={() => setFilterType(filterType === f ? "" : f)}
-                  style={{ padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${filterType === f ? "#003087" : "#DDE3EF"}`, background: filterType === f ? "#003087" : "#fff", color: filterType === f ? "#fff" : "#555" }}>
-                  {f}
-                </button>
-              ))}
-            </div>
+            {/* Type filters - Row 3 — only after schedule selected */}
+            {filterSchedule && (
+              <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                {["SPH", "TOR", "MF", "MFT"].map((f) => (
+                  <button key={f} onClick={() => setFilterType(filterType === f ? "" : f)}
+                    style={{ padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${filterType === f ? "#003087" : "#DDE3EF"}`, background: filterType === f ? "#003087" : "#fff", color: filterType === f ? "#fff" : "#555" }}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div style={{ marginBottom: 10 }} />
 
             {/* Product list */}
             {(() => {
