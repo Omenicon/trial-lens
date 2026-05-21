@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Menicon Trial Lens Order</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #F5F7FA; font-family: 'DM Sans', 'Helvetica Neue', sans-serif; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type=number] { -moz-appearance: textfield; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #DDE3EF; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+// ── CONFIGURATION ─────────────────────────────────────────────────────────────
+// Replace this URL with your Power Automate HTTP trigger URL after setting it up
+const POWER_AUTOMATE_URL = "YOUR_POWER_AUTOMATE_URL_HERE";
+
+// ── PRODUCT DATA ──────────────────────────────────────────────────────────────
+const PRODUCTS = [
+  {
+    id: "ev_soria_sphere",
+    name: "EasyVision Soria",
+    type: "Daily Sphere",
+    color: "#67B4AD",
+    brand: "EasyVision",
+    spheres: [-13.00,-12.50,-12.00,-11.50,-11.00,-10.50,-10.00,-9.50,-9.00,-8.50,-8.00,-7.50,-7.00,-6.50,-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00,+0.25,+0.50,+0.75,+1.00,+1.25,+1.50,+1.75,+2.00,+2.25,+2.50,+2.75,+3.00,+3.25,+3.50,+3.75,+4.00,+4.25,+4.50,+4.75,+5.00,+5.25,+5.50,+5.75,+6.00],
+    extraDims: null,
+  },
+  {
+    id: "ev_soria_toric",
+    name: "EasyVision Soria",
+    type: "Daily Toric",
+    color: "#67B4AD",
+    brand: "EasyVision",
+    spheres: [-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00],
+    extraDims: [
+      { key: "cyl", label: "Cylinder", opts: [-0.75,-1.25,-1.75] },
+      { key: "axis", label: "Axis", opts: [10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180], suffix: "°" }
+    ],
+  },
+  {
+    id: "ev_soria_mf",
+    name: "EasyVision Soria",
+    type: "Daily MF",
+    color: "#67B4AD",
+    brand: "EasyVision",
+    spheres: [-10.00,-9.50,-9.00,-8.50,-8.00,-7.50,-7.00,-6.50,-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00,+0.25,+0.50,+0.75,+1.00,+1.25,+1.50,+1.75,+2.00,+2.25,+2.50,+2.75,+3.00,+3.25,+3.50,+3.75,+4.00,+4.25,+4.50,+4.75,+5.00],
+    extraDims: [
+      { key: "add", label: "Add", opts: ["LOW", "HIGH"] }
+    ],
+  },
+  {
+    id: "eyexpert_vibe_sphere",
+    name: "Eyexpert Vibe",
+    type: "Daily Sphere",
+    color: "#3F2021",
+    brand: "Eyexpert",
+    spheres: [-13.00,-12.50,-12.00,-11.50,-11.00,-10.50,-10.00,-9.50,-9.00,-8.50,-8.00,-7.50,-7.00,-6.50,-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00,+0.25,+0.50,+0.75,+1.00,+1.25,+1.50,+1.75,+2.00,+2.25,+2.50,+2.75,+3.00,+3.25,+3.50,+3.75,+4.00,+4.25,+4.50,+4.75,+5.00,+5.25,+5.50,+5.75,+6.00],
+    extraDims: null,
+  },
+  {
+    id: "eyexpert_vibe_mf",
+    name: "Eyexpert Vibe",
+    type: "Daily MF",
+    color: "#3F2021",
+    brand: "Eyexpert",
+    spheres: [-10.00,-9.50,-9.00,-8.50,-8.00,-7.50,-7.00,-6.50,-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00,+0.25,+0.50,+0.75,+1.00,+1.25,+1.50,+1.75,+2.00,+2.25,+2.50,+2.75,+3.00,+3.25,+3.50,+3.75,+4.00,+4.25,+4.50,+4.75,+5.00],
+    extraDims: [
+      { key: "add", label: "Add", opts: ["LOW", "HIGH"] }
+    ],
+  },
+  {
+    id: "eyexpert_vibe_toric",
+    name: "Eyexpert Vibe",
+    type: "Daily Toric",
+    color: "#3F2021",
+    brand: "Eyexpert",
+    spheres: [-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00],
+    extraDims: [
+      { key: "cyl", label: "Cylinder", opts: [-0.75,-1.25,-1.75] },
+      { key: "axis", label: "Axis", opts: [10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180], suffix: "°" }
+    ],
+  },
+  {
+    id: "miru1day_upside",
+    name: "Miru 1day UpSide",
+    type: "Daily Sphere",
+    color: "#000000",
+    brand: "UpSide",
+    spheres: [-13.00,-12.50,-12.00,-11.50,-11.00,-10.50,-10.00,-9.50,-9.00,-8.50,-8.00,-7.50,-7.00,-6.50,-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00,+0.25,+0.50,+0.75,+1.00,+1.25,+1.50,+1.75,+2.00,+2.25,+2.50,+2.75,+3.00,+3.25,+3.50,+3.75,+4.00,+4.25,+4.50,+4.75,+5.00,+5.25,+5.50,+5.75,+6.00],
+    extraDims: null,
+  },
+  {
+    id: "miru1day_upside_toric",
+    name: "Miru 1day UpSide",
+    type: "Daily Toric",
+    color: "#000000",
+    brand: "UpSide",
+    spheres: [-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00],
+    extraDims: [
+      { key: "cyl", label: "Cylinder", opts: [-0.75,-1.25,-1.75] },
+      { key: "axis", label: "Axis", opts: [10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180], suffix: "°" }
+    ],
+  },
+  {
+    id: "miru1day_upside_mf",
+    name: "Miru 1day UpSide",
+    type: "Daily MF",
+    color: "#000000",
+    brand: "UpSide",
+    spheres: [-10.00,-9.50,-9.00,-8.50,-8.00,-7.50,-7.00,-6.50,-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00,+0.25,+0.50,+0.75,+1.00,+1.25,+1.50,+1.75,+2.00,+2.25,+2.50,+2.75,+3.00,+3.25,+3.50,+3.75,+4.00,+4.25,+4.50,+4.75,+5.00],
+    extraDims: [
+      { key: "add", label: "Add", opts: ["LOW", "HIGH"] }
+    ],
+  },
+];
+
+const SALES_REPS = [
+  "Select rep...",
+  "Andrew",
+  "James M",
+  "James P",
+  "Jennifer",
+  "Mariah",
+  "Phil",
+  "Shail",
+  "Stuart",
+  "Øyvind",
+];
+
+const fmtSph = (v) => {
+  if (v === 0) return "0.00";
+  return v > 0 ? `+${v.toFixed(2)}` : v.toFixed(2);
+};
+
+const fmtDim = (v, suffix) =>
+  typeof v === "number"
+    ? `${v >= 0 && !suffix ? "+" : ""}${v.toFixed(suffix ? 0 : 2)}${suffix || ""}`
+    : String(v);
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+const T = {
+  primary: { width: "100%", padding: "14px", background: "#003087", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer" },
+  secondary: { width: "100%", padding: "12px", background: "transparent", color: "#003087", border: "1.5px solid #003087", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer" },
+  back: { background: "none", border: "none", color: "#003087", fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: 16, padding: 0, display: "flex", alignItems: "center", gap: 4 },
+  input: { width: "100%", padding: "12px 14px", border: "1.5px solid #DDE3EF", borderRadius: 10, fontSize: 15, background: "#fff", outline: "none", marginBottom: 14, fontFamily: "inherit" },
+  label: { fontSize: 12, fontWeight: 600, color: "#555", marginBottom: 6, display: "block" },
+  dimLabel: { fontSize: 11, fontWeight: 700, color: "#666", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8, display: "block" },
+  smBtn: (c) => ({ width: 26, height: 26, borderRadius: 6, border: `1.5px solid ${c}`, background: "#fff", color: c, fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }),
+};
+
+// ── SphereGrid ────────────────────────────────────────────────────────────────
+function SphereGrid({ spheres, color, qtys, onChange }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+      {spheres.map((sph) => {
+        const q = qtys[sph] || 0;
+        const active = q > 0;
+        return (
+          <div key={sph} style={{ borderRadius: 10, border: `2px solid ${active ? color : "#DDE3EF"}`, background: active ? color : "#fff", overflow: "hidden", transition: "all 0.12s" }}>
+            <div
+              onClick={() => !active && onChange(sph, 1)}
+              style={{ textAlign: "center", padding: active ? "6px 4px 2px" : "10px 4px", fontSize: 12, fontWeight: active ? 700 : 500, color: active ? "#fff" : "#333", cursor: active ? "default" : "pointer", userSelect: "none" }}
+            >
+              {fmtSph(sph)}
+            </div>
+            {active && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, padding: "2px 4px 6px" }}>
+                <button onClick={() => onChange(sph, q - 1)} style={{ width: 22, height: 22, borderRadius: 5, border: "1.5px solid rgba(255,255,255,0.6)", background: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", lineHeight: 1, padding: 0 }}>−</button>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", minWidth: 16, textAlign: "center" }}>{q}</span>
+                <button onClick={() => onChange(sph, q + 1)} style={{ width: 22, height: 22, borderRadius: 5, border: "1.5px solid rgba(255,255,255,0.6)", background: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", lineHeight: 1, padding: 0 }}>+</button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Bank definitions ──────────────────────────────────────────────────────────
+const SPHERE_BANK = {
+  "+6.00":1,"+5.50":1,"+5.00":1,"+4.50":1,"+4.00":1,"+3.50":1,"+3.00":1,
+  "+2.50":1,"+2.00":1,"+1.50":1,"+1.00":1,"+0.50":1,
+  "-0.50":2,"-0.75":2,
+  "-1.00":4,"-1.25":4,"-1.50":4,"-1.75":4,"-2.00":4,"-2.25":4,"-2.50":4,
+  "-2.75":4,"-3.00":4,"-3.25":4,"-3.50":4,"-3.75":4,"-4.00":4,"-4.25":4,
+  "-4.50":4,"-4.75":4,"-5.00":4,
+  "-5.50":2,"-6.00":2,"-6.50":2,"-7.00":2,"-7.50":2,"-8.00":2,
+};
+
+const MF_LOW_BANK = {
+  "+3.00":2,"+2.50":2,"+2.00":2,"+1.75":2,"+1.50":2,"+1.00":2,
+  "+0.50":2,"0.00":2,
+  "-0.50":2,"-0.75":2,
+  "-1.00":4,"-1.25":4,"-1.50":4,"-1.75":4,"-2.00":4,"-2.25":4,"-2.50":4,
+  "-2.75":4,"-3.00":4,"-3.25":4,"-3.50":4,"-3.75":4,"-4.00":4,
+  "-4.25":2,"-4.50":2,"-4.75":2,"-5.00":2,"-5.50":2,"-6.00":2,
+};
+
+const MF_HIGH_BANK = {
+  "+3.00":1,"+2.50":1,"+2.00":1,"+1.50":1,"+1.00":1,"+0.50":1,
+  "0.00":1,"-0.50":1,"-1.00":1,"-1.50":1,"-2.00":1,"-2.50":1,
+};
+
+function getBankDefinition(type, add) {
+  if (type.includes("Sphere")) return SPHERE_BANK;
+  if (type.includes("MF")) {
+    if (add === "HIGH") return MF_HIGH_BANK;
+    return MF_LOW_BANK;
+  }
+  return null;
+}
+
+// ── ProductOrderSheet ─────────────────────────────────────────────────────────
+function ProductOrderSheet({ product, onAddToCart, onBack, onViewCart, cartCount }) {
+  const { spheres, extraDims, color, name, type } = product;
+  const initDims = {};
+  (extraDims || []).forEach((d) => { initDims[d.key] = d.opts[0]; });
+  const [dims, setDims] = React.useState(initDims);
+  const [qtys, setQtys] = React.useState({});
+  const [bankQty, setBankQty] = React.useState(0);
+  const [fillBank, setFillBank] = React.useState(false);
+  const [fillQtys, setFillQtys] = React.useState({});
+  const [added, setAdded] = React.useState(false);
+  const [powerFilter, setPowerFilter] = React.useState("All");
+
+  // Get bank definition based on product type and current add selection
+  const bankDef = getBankDefinition(type, dims.add);
+
+  // When fill bank is opened, pre-populate fillQtys from bank definition
+  const openFillBank = () => {
+    if (bankDef) {
+      setFillQtys({ ...bankDef });
+    }
+    setFillBank(true);
+  };
+
+  const handleFillQty = (power, val) => {
+    const n = Math.max(0, val);
+    setFillQtys(q => { const next = { ...q }; if (n === 0) delete next[power]; else next[power] = n; return next; });
+  };
+
+  const handleDim = (key, val) => {
+    setDims((d) => ({ ...d, [key]: val }));
+    setQtys({});
+    // Reset fill bank when Add changes so quantities reload from correct definition
+    if (key === "add") {
+      setFillBank(false);
+      setFillQtys({});
+    }
+  };
+  const handleQty = (sph, val) => {
+    const n = Math.max(0, val);
+    setQtys((q) => { const next = { ...q }; if (n === 0) delete next[sph]; else next[sph] = n; return next; });
+  };
+
+  const selectedSpheres = Object.keys(qtys).map(Number).filter((s) => qtys[s] > 0);
+  const dimLabel = () => Object.entries(dims).map(([k, v]) => {
+    const dim = (extraDims || []).find((d) => d.key === k);
+    return `${dim?.label}: ${fmtDim(v, dim?.suffix)}`;
+  }).join("  ·  ");
+
+  const filteredSpheres = spheres.filter(s => {
+    if (powerFilter === "Minus") return s <= 0;
+    if (powerFilter === "Plus") return s >= 0;
+    return true;
+  });
+
+  const canAdd = bankQty > 0 || selectedSpheres.length > 0 || Object.keys(fillQtys).some(k => fillQtys[k] > 0);
+
+  const handleAdd = () => {
+    const lines = [];
+    if (bankQty > 0) {
+      lines.push({ id: Date.now() + Math.random(), product: name, type, color, params: `Bank (Empty Case)`, qty: bankQty, isBank: true });
+    }
+    // Filled bank lines
+    Object.entries(fillQtys).filter(([,q]) => q > 0).sort(([a],[b]) => parseFloat(a)-parseFloat(b)).forEach(([power, qty]) => {
+      lines.push({ id: Date.now() + Math.random(), product: name, type, color, params: `For Bank · ${power}D${dims.add ? ` · Add: ${dims.add}` : ""}`, qty, isBank: true });
+    });
+    // Individual powers
+    selectedSpheres.forEach(sph => {
+      lines.push({ id: Date.now() + Math.random(), product: name, type, color, params: `${fmtSph(sph)}D${dimLabel() ? "  ·  " + dimLabel() : ""}`, qty: qtys[sph], isBank: false });
+    });
+    onAddToCart(lines);
+    const resetDims = {};
+    (extraDims || []).forEach((d) => { resetDims[d.key] = d.opts[0]; });
+    setDims(resetDims);
+    setQtys({});
+    setBankQty(0);
+    setFillQtys({});
+    setFillBank(false);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  const needsDimSelection = extraDims && extraDims.some(d => d.key !== 'add');
+
+  return (
+    <div>
+      <button onClick={onBack} style={T.back}>← Back</button>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+        <div style={{ width: 14, height: 14, borderRadius: "50%", background: color, flexShrink: 0 }} />
+        <div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>{name}</div>
+          <div style={{ fontSize: 12, color: "#888" }}>{type}</div>
+        </div>
+      </div>
+
+      {/* Bank — always shown at top */}
+      <div style={{ background: "#fff", border: "1.5px solid #DDE3EF", borderRadius: 12, padding: "12px 14px", marginBottom: 16 }}>
+        {/* Bank Empty row */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: bankDef ? 10 : 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#333" }}>Bank (Empty Case)</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button onClick={() => setBankQty(q => Math.max(0, q - 1))}
+              style={{ width: 28, height: 28, borderRadius: 8, border: "1.5px solid #DDE3EF", background: "#F5F7FA", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#333" }}>−</button>
+            <span style={{ fontSize: 15, fontWeight: 700, minWidth: 16, textAlign: "center", color: bankQty > 0 ? color : "#999" }}>{bankQty}</span>
+            <button onClick={() => setBankQty(q => q + 1)}
+              style={{ width: 28, height: 28, borderRadius: 8, border: "1.5px solid #DDE3EF", background: "#F5F7FA", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#333" }}>+</button>
+          </div>
+        </div>
+
+        {/* Fill Bank button — only for Sphere and MF */}
+        {bankDef && (
+          <>
+            <div style={{ height: 1, background: "#F0F2F8", marginBottom: 10 }} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "#333" }}>For Bank</div>
+              <button onClick={() => { if (!fillBank) setFillQtys({...bankDef}); setFillBank(f => !f); }}
+                style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${color}`, background: fillBank ? color : "#fff", color: fillBank ? "#fff" : color }}>
+                {fillBank ? "Hide" : "Fill bank"}
+              </button>
+            </div>
+
+            {/* Fill bank power grid */}
+            {fillBank && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#666", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+                  Adjust quantities — pre-filled from bank definition
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, maxHeight: 300, overflowY: "auto" }}>
+                  {Object.entries(bankDef).sort(([a],[b]) => parseFloat(b)-parseFloat(a)).map(([power]) => {
+                    const q = fillQtys[power] !== undefined ? fillQtys[power] : (bankDef[power] || 0);
+                    return (
+                      <div key={power} style={{ background: q > 0 ? color + "15" : "#F5F7FA", border: `1.5px solid ${q > 0 ? color + "40" : "#DDE3EF"}`, borderRadius: 8, padding: "6px 4px" }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, textAlign: "center", color: "#555", marginBottom: 4 }}>{power}</div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                          <button onClick={() => handleFillQty(power, q - 1)}
+                            style={{ width: 22, height: 22, borderRadius: 5, border: "1.5px solid #DDE3EF", background: "#fff", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                          <span style={{ fontSize: 13, fontWeight: 700, minWidth: 16, textAlign: "center", color: q > 0 ? color : "#aaa" }}>{q}</span>
+                          <button onClick={() => handleFillQty(power, q + 1)}
+                            style={{ width: 22, height: 22, borderRadius: 5, border: "1.5px solid #DDE3EF", background: "#fff", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        <div style={{ flex: 1, height: 1, background: "#DDE3EF" }} />
+        <span style={{ fontSize: 11, color: "#aaa", textTransform: "uppercase", letterSpacing: 0.5 }}>or select individual powers</span>
+        <div style={{ flex: 1, height: 1, background: "#DDE3EF" }} />
+      </div>
+
+      {(extraDims || []).map((dim) => (
+        <div key={dim.key} style={{ marginBottom: 16 }}>
+          <span style={T.dimLabel}>{dim.label}</span>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {dim.opts.map((opt) => (
+              <button key={opt} onClick={() => handleDim(dim.key, opt)}
+                style={{ padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: dims[dim.key] === opt ? 700 : 500, background: dims[dim.key] === opt ? color : "#F0F2F8", color: dims[dim.key] === opt ? "#fff" : "#444", border: `1.5px solid ${dims[dim.key] === opt ? color : "transparent"}`, cursor: "pointer" }}>
+                {fmtDim(opt, dim.suffix)}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {needsDimSelection && (!dims.cyl || !dims.axis) ? null : (
+        <>
+          {/* Power toggle */}
+          <div style={{ display: "flex", background: "#F0F2F8", borderRadius: 10, padding: 4, marginBottom: 12, gap: 4 }}>
+            {["All", "Minus", "Plus"].map((opt) => (
+              <button key={opt} onClick={() => setPowerFilter(opt)}
+                style={{ flex: 1, padding: "8px 4px", borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", background: powerFilter === opt ? "#003087" : "transparent", color: powerFilter === opt ? "#fff" : "#666", transition: "all 0.15s" }}>
+                {opt === "Minus" ? "− Minus" : opt === "Plus" ? "+ Plus" : "All"}
+              </button>
+            ))}
+          </div>
+
+          <span style={T.dimLabel}>Power — tap to select, use +/− for quantity</span>
+          <SphereGrid spheres={filteredSpheres} color={color} qtys={qtys} onChange={handleQty} />
+        </>
+      )}
+
+      {(bankQty > 0 || selectedSpheres.length > 0) && (
+        <div style={{ marginTop: 16, background: color + "12", border: `1.5px solid ${color}30`, borderRadius: 10, padding: "10px 14px" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color, marginBottom: 6 }}>
+            {[bankQty > 0 ? `Bank × ${bankQty}` : null, selectedSpheres.length > 0 ? `${selectedSpheres.length} power${selectedSpheres.length !== 1 ? "s" : ""}` : null].filter(Boolean).join("  ·  ")}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {selectedSpheres.sort((a, b) => a - b).map((sph) => (
+              <span key={sph} style={{ fontSize: 12, background: color, color: "#fff", borderRadius: 6, padding: "3px 8px", fontWeight: 600 }}>
+                {fmtSph(sph)} × {qtys[sph]}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {added && (
+        <div style={{ background: "#D1FAE5", border: "1px solid #6EE7B7", borderRadius: 8, padding: "10px 14px", marginTop: 16, fontSize: 13, color: "#065F46", fontWeight: 600, textAlign: "center" }}>
+          ✓ Added to order — select next combination or go back
+        </div>
+      )}
+
+      <button onClick={handleAdd} disabled={!canAdd}
+        style={{ ...T.primary, marginTop: 16, opacity: canAdd ? 1 : 0.35 }}>
+        Add {canAdd ? [bankQty > 0 ? `bank` : null, selectedSpheres.length > 0 ? `${selectedSpheres.length} power${selectedSpheres.length !== 1 ? "s" : ""}` : null].filter(Boolean).join(" + ") : "to order"} →
+      </button>
+
+      <div style={{ height: 1, background: "#DDE3EF", margin: "12px 0" }} />
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={onBack} style={{ flex: 1, padding: "11px 8px", background: "transparent", color: "#003087", border: "1.5px solid #DDE3EF", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+          ← Products
+        </button>
+        <button onClick={onViewCart} style={{ flex: 2, padding: "11px 8px", background: "transparent", color: "#003087", border: "1.5px solid #003087", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+          View cart ({cartCount} line{cartCount !== 1 ? "s" : ""}) →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── OrderSummary ──────────────────────────────────────────────────────────────
+function OrderSummary({ cart, store, rep, onAdjust, onRemove, onConfirm, onBack }) {
+  const total = cart.reduce((a, i) => a + i.qty, 0);
+  return (
+    <div>
+      <button onClick={onBack} style={T.back}>← Add more products</button>
+      <div style={{ fontSize: 20, fontWeight: 700, color: "#003087", marginBottom: 2 }}>Order Summary</div>
+      <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>{store} · {rep}</div>
+
+      {cart.map((item) => (
+        <div key={item.id} style={{ background: "#fff", borderRadius: 10, padding: "12px 14px", marginBottom: 8, display: "flex", alignItems: "center", gap: 10, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.color, flexShrink: 0 }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.product}</div>
+            <div style={{ fontSize: 11, color: "#888" }}>{item.type}</div>
+            <div style={{ fontSize: 12, color: "#666" }}>{item.params}</div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+            <button onClick={() => item.qty > 1 ? onAdjust(item.id, item.qty - 1) : onRemove(item.id)} style={T.smBtn("#003087")}>−</button>
+            <span style={{ fontSize: 14, fontWeight: 700, minWidth: 20, textAlign: "center" }}>{item.qty}</span>
+            <button onClick={() => onAdjust(item.id, item.qty + 1)} style={T.smBtn("#003087")}>+</button>
+          </div>
+          <button onClick={() => onRemove(item.id)} style={{ background: "none", border: "none", color: "#ccc", fontSize: 16, cursor: "pointer", padding: 0, marginLeft: 2 }}>✕</button>
+        </div>
+      ))}
+
+      <div style={{ textAlign: "right", fontSize: 13, color: "#444", fontWeight: 600, marginBottom: 16 }}>
+        {cart.length} line{cart.length !== 1 ? "s" : ""} · {total} pack{total !== 1 ? "s" : ""} total
+      </div>
+
+      <button onClick={onConfirm} style={T.primary}>
+        Submit Order →
+      </button>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+function App() {
+  const [step, setStep] = React.useState("store");
+  const [store, setStore] = React.useState("");
+  const [storeId, setStoreId] = React.useState("");
+  const [postCode, setPostCode] = React.useState("");
+  const [rep, setRep] = React.useState("");
+  const [product, setProduct] = React.useState(null);
+  const [cart, setCart] = React.useState([]);
+  const [search, setSearch] = React.useState("");
+
+  const [filterSchedule, setFilterSchedule] = React.useState("");
+  const [filterType, setFilterType] = React.useState("");
+  const [filterBrand, setFilterBrand] = React.useState("");
+
+  const scheduleMap = { DD: "Daily", FRP: "Monthly" };
+  const typeMap = { SPH: "Sphere", TOR: "Toric", MF: "MF", MFT: "MFT" };
+
+  const handleBrandFilter = (f) => {
+    setFilterBrand(filterBrand === f ? "" : f);
+    setFilterSchedule("");
+    setFilterType("");
+  };
+
+  const handleScheduleFilter = (f) => {
+    setFilterSchedule(filterSchedule === f ? "" : f);
+    setFilterType("");
+  };
+
+  const adjustQty = (id, qty) => setCart((c) => c.map((i) => i.id === id ? { ...i, qty } : i));
+  const removeItem = (id) => setCart((c) => c.filter((i) => i.id !== id));
+
+  const handleSubmit = () => {
+    const orderDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    const total = cart.reduce((a, i) => a + i.qty, 0);
+
+    const subject = `Trial Lens Order — ${store} (${storeId}) — ${rep} — ${orderDate}`;
+
+    const bankItems = cart.filter(i => i.isBank);
+    const trialItems = cart.filter(i => !i.isBank);
+
+    const formatLine = (item) => [item.product, item.type, item.params, `Qty: ${item.qty}`].join(" | ");
+
+    const bankSection = bankItems.length > 0
+      ? `BANK ORDER\n${"─".repeat(40)}\n${bankItems.map(formatLine).join("\n")}`
+      : "";
+
+    const trialSection = trialItems.length > 0
+      ? `TRIAL LENSES\n${"─".repeat(40)}\n${trialItems.map(formatLine).join("\n")}`
+      : "";
+
+    const sections = [bankSection, trialSection].filter(Boolean).join("\n\n");
+
+    const body =
+`Trial Lens Order
+
+Store: ${store}
+Store ID: ${storeId}
+Post Code: ${postCode}
+Sales Rep: ${rep}
+Date: ${orderDate}
+
+${sections}
+
+${"─".repeat(40)}
+Total: ${cart.length} line${cart.length !== 1 ? "s" : ""} · ${total} pack${total !== 1 ? "s" : ""}
+
+Sent from Menicon Trial Lens App`;
+
+    const mailtoURL = `mailto:orders@menicon.co.uk?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoURL;
+    setStep("done");
+  };
+
+  const Header = ({ showCart }) => (
+    <div style={{ background: "#003087", color: "#fff", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 10, boxShadow: "0 2px 10px rgba(0,0,0,0.2)" }}>
+      <div>
+        <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: 1 }}>MENICON</div>
+        <div style={{ fontSize: 11, opacity: 0.7 }}>Trial Lens Order</div>
+      </div>
+      {showCart && cart.length > 0 && (
+        <button onClick={() => setStep("summary")} style={{ background: "#fff", color: "#003087", border: "none", borderRadius: 20, padding: "6px 14px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+          Cart ({cart.length})
+        </button>
+      )}
+    </div>
+  );
+
+  if (step === "done") {
+    const total = cart.reduce((a, i) => a + i.qty, 0);
+    return (
+      <div style={{ fontFamily: "inherit", background: "#F5F7FA", minHeight: "100vh", maxWidth: 520, margin: "0 auto" }}>
+        <Header showCart={false} />
+        <div style={{ padding: "50px 20px", textAlign: "center" }}>
+          <div style={{ fontSize: 52, marginBottom: 12 }}>✅</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "#003087", marginBottom: 6 }}>Order Submitted!</div>
+          <div style={{ fontSize: 14, color: "#666", marginBottom: 24 }}>
+            <b>{cart.length} lines · {total} packs</b><br />for <b>{store}</b> · {rep}
+          </div>
+          <div style={{ background: "#fff", borderRadius: 12, padding: 16, textAlign: "left", marginBottom: 24 }}>
+            {cart.map((item) => (
+              <div key={item.id} style={{ marginBottom: 8, paddingBottom: 8, borderBottom: "1px solid #F0F2F8" }}>
+                <div style={{ fontWeight: 600, fontSize: 13 }}>{item.product} — {item.type}</div>
+                <div style={{ fontSize: 12, color: "#666" }}>{item.params}</div>
+                <div style={{ fontSize: 12, color: "#003087", fontWeight: 700 }}>× {item.qty}</div>
+              </div>
+            ))}
+          </div>
+          <button style={T.primary} onClick={() => { setCart([]); setStore(""); setStoreId(""); setPostCode(""); setRep(""); setStep("store"); }}>
+            New Order
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ fontFamily: "inherit", background: "#F5F7FA", minHeight: "100vh", maxWidth: 520, margin: "0 auto", paddingBottom: 80 }}>
+      <Header showCart={step !== "summary"} />
+      <div style={{ padding: "20px 16px" }}>
+
+        {step === "store" && (
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#003087", marginBottom: 4 }}>Hello! 👋</div>
+            <div style={{ fontSize: 14, color: "#666", marginBottom: 24 }}>Fill in store and your name to start.</div>
+            <label style={T.label}>Store</label>
+            <input style={T.input} placeholder="e.g. Specsavers Oslo City" value={store} onChange={(e) => setStore(e.target.value)} />
+            <label style={T.label}>Store ID</label>
+            <input style={T.input} placeholder="e.g. 12345" value={storeId} onChange={(e) => setStoreId(e.target.value)} />
+            <label style={T.label}>Post Code</label>
+            <input style={T.input} placeholder="e.g. 0150" value={postCode} onChange={(e) => setPostCode(e.target.value)} />
+            <label style={T.label}>Sales Rep</label>
+            <select style={{ ...T.input, appearance: "none", background: `#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 14px center` }}
+              value={rep} onChange={(e) => setRep(e.target.value)}>
+              {SALES_REPS.map(r => <option key={r} value={r === "Select rep..." ? "" : r}>{r}</option>)}
+            </select>
+            <button style={{ ...T.primary, opacity: store && storeId && postCode && rep ? 1 : 0.4 }} disabled={!store || !storeId || !postCode || !rep} onClick={() => setStep("product")}>
+              Start Ordering →
+            </button>
+          </div>
+        )}
+
+        {step === "product" && (
+          <div>
+            <div style={{ fontSize: 12, color: "#888", marginBottom: 2 }}>Order for</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#003087", marginBottom: 16 }}>{store} {storeId ? `(${storeId})` : ""}</div>
+
+            {/* Search */}
+            <input style={{ ...T.input, marginBottom: 12 }} placeholder="🔍 Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
+
+            {/* Brand filters - Row 1 — always visible */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+              {["EasyVision", "Eyexpert", "Miru"].map((f) => (
+                <button key={f} onClick={() => handleBrandFilter(f)}
+                  style={{ padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${filterBrand === f ? "#003087" : "#DDE3EF"}`, background: filterBrand === f ? "#003087" : "#fff", color: filterBrand === f ? "#fff" : "#555" }}>
+                  {f}
+                </button>
+              ))}
+            </div>
+
+            {/* Schedule filters - Row 2 — only after brand selected */}
+            {filterBrand && (
+              <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                {["DD", "FRP"].map((f) => (
+                  <button key={f} onClick={() => handleScheduleFilter(f)}
+                    style={{ padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${filterSchedule === f ? "#003087" : "#DDE3EF"}`, background: filterSchedule === f ? "#003087" : "#fff", color: filterSchedule === f ? "#fff" : "#555" }}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Type filters - Row 3 — only after schedule selected */}
+            {filterSchedule && (
+              <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                {["SPH", "TOR", "MF", "MFT"].map((f) => (
+                  <button key={f} onClick={() => setFilterType(filterType === f ? "" : f)}
+                    style={{ padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${filterType === f ? "#003087" : "#DDE3EF"}`, background: filterType === f ? "#003087" : "#fff", color: filterType === f ? "#fff" : "#555" }}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div style={{ marginBottom: 10 }} />
+
+            {/* Product list */}
+            {(() => {
+              const items = PRODUCTS.filter((p) => {
+                const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.type.toLowerCase().includes(search.toLowerCase());
+                const matchSchedule = !filterSchedule || p.type.startsWith(scheduleMap[filterSchedule]);
+                const matchType = !filterType || p.type.toLowerCase().includes(typeMap[filterType].toLowerCase());
+                const matchBrand = !filterBrand || (filterBrand === "Miru" ? p.brand === "UpSide" : p.brand === filterBrand);
+                return matchSearch && matchSchedule && matchType && matchBrand;
+              });
+              if (!items.length) return (
+                <div style={{ textAlign: "center", color: "#aaa", padding: "40px 0", fontSize: 14 }}>
+                  No products match your filters
+                </div>
+              );
+              return items.map((p) => (
+                <div key={p.id} onClick={() => { setProduct(p); setStep("params"); }}
+                  style={{ background: "#fff", borderRadius: 12, padding: "14px 16px", marginBottom: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 12, height: 12, borderRadius: "50%", background: p.color, flexShrink: 0, border: p.color === "#000000" ? "1px solid #ddd" : "none" }} />
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 15 }}>{p.name}</div>
+                    <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 20, fontWeight: 600, marginTop: 4, display: "inline-block", background: p.color + "18", color: p.color === "#000000" ? "#333" : p.color }}>{p.type}</span>
+                  </div>
+                  <div style={{ marginLeft: "auto", color: "#ccc", fontSize: 18 }}>›</div>
+                </div>
+              ));
+            })()}
+
+            {cart.length > 0 && (
+              <button style={{ ...T.primary, marginTop: 8 }} onClick={() => setStep("summary")}>
+                View Summary ({cart.length} line{cart.length !== 1 ? "s" : ""}) →
+              </button>
+            )}
+          </div>
+        )}
+
+        {step === "params" && product && (
+          <ProductOrderSheet
+            product={product}
+            onAddToCart={(lines) => { setCart((c) => [...c, ...lines]); }}
+            onBack={() => setStep("product")}
+            onViewCart={() => setStep("summary")}
+            cartCount={cart.length}
+          />
+        )}
+
+        {step === "summary" && (
+          <>
+            <OrderSummary
+              cart={cart} store={store} rep={rep}
+              onAdjust={adjustQty} onRemove={removeItem}
+              onConfirm={handleSubmit} onBack={() => setStep("product")}
+            />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
+</script>
+</body>
+</html>
