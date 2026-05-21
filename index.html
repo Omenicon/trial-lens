@@ -81,7 +81,39 @@ const PRODUCTS = [
     ],
   },
   {
-    id: "eyexpert_vibe_toric",
+    id: "eyexpert_thin_sphere",
+    name: "Eyexpert Thin",
+    type: "Daily Sphere",
+    color: "#1B4F72",
+    brand: "Eyexpert",
+    spheres: [-10.00,-9.50,-9.00,-8.50,-8.00,-7.50,-7.00,-6.50,-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,+0.50,+0.75,+1.00,+1.25,+1.50,+1.75,+2.00,+2.25,+2.50,+2.75,+3.00,+3.25,+3.50,+3.75,+4.00],
+    extraDims: null,
+  },
+  {
+    id: "eyexpert_thin_toric",
+    name: "Eyexpert Thin",
+    type: "Daily Toric",
+    color: "#1B4F72",
+    brand: "Eyexpert",
+    spheres: [-10.00,-9.50,-9.00,-8.50,-8.00,-7.50,-7.00,-6.50,-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00,+0.25,+0.50,+0.75,+1.00,+1.25,+1.50,+1.75,+2.00],
+    extraDims: [
+      { key: "cyl", label: "Cylinder", opts: [-0.75,-1.25,-1.75] },
+      { key: "axis", label: "Axis", opts: [15,90,165,180], suffix: "°",
+        // -1.75 only available in 180°
+      }
+    ],
+  },
+  {
+    id: "eyexpert_thin_mf",
+    name: "Eyexpert Thin",
+    type: "Daily MF",
+    color: "#1B4F72",
+    brand: "Eyexpert",
+    spheres: [-10.00,-9.50,-9.00,-8.50,-8.00,-7.50,-7.00,-6.50,-6.00,-5.75,-5.50,-5.25,-5.00,-4.75,-4.50,-4.25,-4.00,-3.75,-3.50,-3.25,-3.00,-2.75,-2.50,-2.25,-2.00,-1.75,-1.50,-1.25,-1.00,-0.75,-0.50,-0.25,0.00,+0.25,+0.50,+0.75,+1.00,+1.25,+1.50,+1.75,+2.00,+2.25,+2.50,+2.75,+3.00,+3.25,+3.50,+3.75,+4.00],
+    extraDims: [
+      { key: "add", label: "Add", opts: ["LOW"] }
+    ],
+  },
     name: "Eyexpert Vibe",
     type: "Daily Toric",
     color: "#3F2021",
@@ -225,7 +257,7 @@ function getBankDefinition(type, add) {
 
 // ── ProductOrderSheet ─────────────────────────────────────────────────────────
 function ProductOrderSheet({ product, onAddToCart, onBack, onViewCart, cartCount }) {
-  const { spheres, extraDims, color, name, type } = product;
+  const { spheres, extraDims, color, name, type, id } = product;
   const initDims = {};
   (extraDims || []).forEach((d) => { initDims[d.key] = d.opts[0]; });
   const [dims, setDims] = React.useState(initDims);
@@ -380,19 +412,29 @@ function ProductOrderSheet({ product, onAddToCart, onBack, onViewCart, cartCount
         <div style={{ flex: 1, height: 1, background: "#DDE3EF" }} />
       </div>
 
-      {(extraDims || []).map((dim) => (
-        <div key={dim.key} style={{ marginBottom: 16 }}>
-          <span style={T.dimLabel}>{dim.label}</span>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {dim.opts.map((opt) => (
-              <button key={opt} onClick={() => handleDim(dim.key, opt)}
-                style={{ padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: dims[dim.key] === opt ? 700 : 500, background: dims[dim.key] === opt ? color : "#F0F2F8", color: dims[dim.key] === opt ? "#fff" : "#444", border: `1.5px solid ${dims[dim.key] === opt ? color : "transparent"}`, cursor: "pointer" }}>
-                {fmtDim(opt, dim.suffix)}
-              </button>
-            ))}
+      {(extraDims || []).map((dim) => {
+        // For axis dim, filter options based on selected cylinder if product has restrictions
+        let opts = dim.opts;
+        if (dim.key === "axis" && dims.cyl === -1.75 && id === "eyexpert_thin_toric") {
+          opts = [180];
+        }
+        return (
+          <div key={dim.key} style={{ marginBottom: 16 }}>
+            <span style={T.dimLabel}>{dim.label}</span>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {opts.map((opt) => (
+                <button key={opt} onClick={() => handleDim(dim.key, opt)}
+                  style={{ padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: dims[dim.key] === opt ? 700 : 500, background: dims[dim.key] === opt ? color : "#F0F2F8", color: dims[dim.key] === opt ? "#fff" : "#444", border: `1.5px solid ${dims[dim.key] === opt ? color : "transparent"}`, cursor: "pointer" }}>
+                  {fmtDim(opt, dim.suffix)}
+                </button>
+              ))}
+            </div>
+            {dim.key === "axis" && dims.cyl === -1.75 && id === "eyexpert_thin_toric" && (
+              <div style={{ fontSize: 11, color: "#888", marginTop: 4 }}>-1.75D cylinder only available at 180°</div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {needsDimSelection && (!dims.cyl || !dims.axis) ? null : (
         <>
